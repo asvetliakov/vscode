@@ -68,6 +68,7 @@ export default class TypeScriptServiceClientHost extends Disposable {
 			processFactory: TsServerProcessFactory,
 		},
 		onCompletionAccepted: (item: vscode.CompletionItem) => void,
+		workspaceFolder?: vscode.WorkspaceFolder
 	) {
 		super();
 
@@ -78,7 +79,8 @@ export default class TypeScriptServiceClientHost extends Disposable {
 			context,
 			onCaseInsenitiveFileSystem,
 			services,
-			allModeIds));
+			allModeIds,
+			workspaceFolder));
 
 		this.client.onDiagnosticsReceived(({ kind, resource, diagnostics }) => {
 			this.diagnosticsReceived(kind, resource, diagnostics);

@@ -1,11 +1,10 @@
 {
-  "name": "typescript-language-features",
-  "description": "%description%",
-  "displayName": "%displayName%",
+  "name": "typescript-language-features-multi-host",
+  "description": "Typescript Language Server - MultiHost mode",
+  "displayName": "Typescript Language Server - MultiHost mode",
   "version": "1.0.0",
-  "icon": "icon.png",
   "author": "vscode",
-  "publisher": "vscode",
+  "publisher": "asvetliakov",
   "license": "MIT",
   "aiKey": "AIF-d9b70cd4-b9f9-4d70-929b-a071c400b217",
   "enableProposedApi": true,
@@ -19,6 +18,7 @@
     "jsonc-parser": "^2.2.1",
     "rimraf": "^2.6.3",
     "semver": "5.5.1",
+    "typescript": "^4.1.3",
     "typescript-vscode-sh-plugin": "^0.6.14",
     "vscode-extension-telemetry": "0.1.1",
     "vscode-nls": "^4.1.1"
@@ -30,7 +30,7 @@
     "typescript-web": "npm:typescript@^4.2.0-dev.20201209"
   },
   "scripts": {
-    "vscode:prepublish": "node ../../node_modules/gulp/bin/gulp.js --gulpfile ../../build/gulpfile.extensions.js compile-extension:typescript-language-features",
+    "vscode:prepublish": "npx webpack-cli --config extension.webpack.config.js --mode none",
     "compile-web": "npx webpack-cli --config extension-browser.webpack.config --mode none",
     "watch-web": "npx webpack-cli --config extension-browser.webpack.config --mode none --watch --info-verbosity verbose"
   },
@@ -51,7 +51,7 @@
     "onCommand:_typescript.learnMoreAboutRefactorings",
     "onLanguage:jsonc"
   ],
-  "main": "./out/extension",
+  "main": "./dist/extension",
   "browser": "./dist/browser/extension",
   "contributes": {
     "jsonValidation": [
@@ -132,13 +132,13 @@
           ],
           "default": null,
           "markdownDescription": "%typescript.tsdk.desc%",
-          "scope": "window"
+          "scope": "resource"
         },
         "typescript.disableAutomaticTypeAcquisition": {
           "type": "boolean",
           "default": false,
           "description": "%typescript.disableAutomaticTypeAcquisition%",
-          "scope": "window",
+          "scope": "resource",
           "tags": [
             "usesOnlineServices"
           ]
@@ -147,7 +147,7 @@
           "type": "boolean",
           "default": false,
           "description": "%typescript.enablePromptUseWorkspaceTsdk%",
-          "scope": "window"
+          "scope": "resource"
         },
         "typescript.npm": {
           "type": [
@@ -162,43 +162,43 @@
           "type": "boolean",
           "default": true,
           "description": "%typescript.check.npmIsInstalled%",
-          "scope": "window"
+          "scope": "resource"
         },
         "javascript.referencesCodeLens.enabled": {
           "type": "boolean",
           "default": false,
           "description": "%javascript.referencesCodeLens.enabled%",
-          "scope": "window"
+          "scope": "resource"
         },
         "javascript.referencesCodeLens.showOnAllFunctions": {
           "type": "boolean",
           "default": false,
           "description": "%javascript.referencesCodeLens.showOnAllFunctions%",
-          "scope": "window"
+          "scope": "resource"
         },
         "typescript.referencesCodeLens.enabled": {
           "type": "boolean",
           "default": false,
           "description": "%typescript.referencesCodeLens.enabled%",
-          "scope": "window"
+          "scope": "resource"
         },
         "typescript.referencesCodeLens.showOnAllFunctions": {
           "type": "boolean",
           "default": false,
           "description": "%typescript.referencesCodeLens.showOnAllFunctions%",
-          "scope": "window"
+          "scope": "resource"
         },
         "typescript.implementationsCodeLens.enabled": {
           "type": "boolean",
           "default": false,
           "description": "%typescript.implementationsCodeLens.enabled%",
-          "scope": "window"
+          "scope": "resource"
         },
         "typescript.tsserver.enableTracing": {
           "type": "boolean",
           "default": false,
           "description": "%typescript.tsserver.enableTracing%",
-          "scope": "window"
+          "scope": "resource"
         },
         "typescript.tsserver.log": {
           "type": "string",
@@ -210,7 +210,7 @@
           ],
           "default": "off",
           "description": "%typescript.tsserver.log%",
-          "scope": "window"
+          "scope": "resource"
         },
         "typescript.tsserver.pluginPaths": {
           "type": "array",
@@ -231,7 +231,7 @@
           ],
           "default": "off",
           "description": "%typescript.tsserver.trace%",
-          "scope": "window"
+          "scope": "resource"
         },
         "javascript.suggest.completeFunctionCalls": {
           "type": "boolean",
@@ -261,19 +261,19 @@
           "type": "boolean",
           "default": true,
           "description": "%typescript.reportStyleChecksAsWarnings%",
-          "scope": "window"
+          "scope": "resource"
         },
         "typescript.validate.enable": {
           "type": "boolean",
           "default": true,
           "description": "%typescript.validate.enable%",
-          "scope": "window"
+          "scope": "resource"
         },
         "typescript.format.enable": {
           "type": "boolean",
           "default": true,
           "description": "%typescript.format.enable%",
-          "scope": "window"
+          "scope": "resource"
         },
         "typescript.format.insertSpaceAfterCommaDelimiter": {
           "type": "boolean",
@@ -391,13 +391,13 @@
           "type": "boolean",
           "default": true,
           "description": "%javascript.validate.enable%",
-          "scope": "window"
+          "scope": "resource"
         },
         "javascript.format.enable": {
           "type": "boolean",
           "default": true,
           "description": "%javascript.format.enable%",
-          "scope": "window"
+          "scope": "resource"
         },
         "javascript.format.insertSpaceAfterCommaDelimiter": {
           "type": "boolean",
@@ -510,38 +510,38 @@
           "default": false,
           "markdownDescription": "%configuration.implicitProjectConfig.checkJs%",
           "markdownDeprecationMessage": "%configuration.javascript.checkJs.checkJs.deprecation%",
-          "scope": "window"
+          "scope": "resource"
         },
         "js/ts.implicitProjectConfig.checkJs": {
           "type": "boolean",
           "default": false,
           "markdownDescription": "%configuration.implicitProjectConfig.checkJs%",
-          "scope": "window"
+          "scope": "resource"
         },
         "javascript.implicitProjectConfig.experimentalDecorators": {
           "type": "boolean",
           "default": false,
           "markdownDescription": "%configuration.implicitProjectConfig.experimentalDecorators%",
           "markdownDeprecationMessage": "%configuration.javascript.checkJs.experimentalDecorators.deprecation%",
-          "scope": "window"
+          "scope": "resource"
         },
         "js/ts.implicitProjectConfig.experimentalDecorators": {
           "type": "boolean",
           "default": false,
           "markdownDescription": "%configuration.implicitProjectConfig.experimentalDecorators%",
-          "scope": "window"
+          "scope": "resource"
         },
         "js/ts.implicitProjectConfig.strictNullChecks": {
           "type": "boolean",
           "default": false,
           "markdownDescription": "%configuration.implicitProjectConfig.strictNullChecks%",
-          "scope": "window"
+          "scope": "resource"
         },
         "js/ts.implicitProjectConfig.strictFunctionTypes": {
           "type": "boolean",
           "default": true,
           "markdownDescription": "%configuration.implicitProjectConfig.strictFunctionTypes%",
-          "scope": "window"
+          "scope": "resource"
         },
         "javascript.suggest.names": {
           "type": "boolean",
@@ -565,7 +565,7 @@
             "%typescript.tsc.autoDetect.watch%"
           ],
           "description": "%typescript.tsc.autoDetect%",
-          "scope": "window"
+          "scope": "resource"
         },
         "javascript.suggest.paths": {
           "type": "boolean",
@@ -623,7 +623,7 @@
           ],
           "default": null,
           "markdownDescription": "%typescript.locale%",
-          "scope": "window"
+          "scope": "resource"
         },
         "javascript.suggestionActions.enabled": {
           "type": "boolean",
@@ -745,7 +745,7 @@
           ],
           "default": "auto",
           "markdownDescription": "%typescript.preferences.includePackageJsonAutoImports%",
-          "scope": "window"
+          "scope": "resource"
         },
         "javascript.preferences.renameShorthandProperties": {
           "type": "boolean",
@@ -831,30 +831,30 @@
           "type": "boolean",
           "default": true,
           "description": "%configuration.surveys.enabled%",
-          "scope": "window"
+          "scope": "resource"
         },
         "typescript.tsserver.useSeparateSyntaxServer": {
           "type": "boolean",
           "default": true,
           "description": "%configuration.tsserver.useSeparateSyntaxServer%",
-          "scope": "window"
+          "scope": "resource"
         },
         "typescript.tsserver.maxTsServerMemory": {
           "type": "number",
           "default": 3072,
           "description": "%configuration.tsserver.maxTsServerMemory%",
-          "scope": "window"
+          "scope": "resource"
         },
         "typescript.tsserver.experimental.enableProjectDiagnostics": {
           "type": "boolean",
           "default": false,
           "description": "%configuration.tsserver.experimental.enableProjectDiagnostics%",
-          "scope": "window"
+          "scope": "resource"
         },
         "typescript.tsserver.watchOptions": {
           "type": "object",
           "description": "%configuration.tsserver.watchOptions%",
-          "scope": "window",
+          "scope": "resource",
           "properties": {
             "watchFile": {
               "type": "string",
@@ -922,7 +922,7 @@
           ],
           "default": "allOpenProjects",
           "markdownDescription": "%typescript.workspaceSymbols.scope%",
-          "scope": "window"
+          "scope": "resource"
         }
       }
     },

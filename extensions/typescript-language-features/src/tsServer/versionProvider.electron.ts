@@ -62,7 +62,7 @@ export class DiskTypeScriptVersionProvider implements ITypeScriptVersionProvider
 	}
 
 	public get bundledVersion(): TypeScriptVersion {
-		const version = this.getContributedVersion(TypeScriptVersionSource.Bundled, 'vscode.typescript-language-features', ['..', 'node_modules']);
+		const version = this.getContributedVersion(TypeScriptVersionSource.Bundled, 'asvetliakov.typescript-language-features-multi-host', ['node_modules']);
 		if (version) {
 			return version;
 		}
@@ -109,7 +109,7 @@ export class DiskTypeScriptVersionProvider implements ITypeScriptVersionProvider
 			];
 		}
 
-		const workspacePath = RelativeWorkspacePathResolver.asAbsoluteWorkspacePath(tsdkPathSetting);
+		const workspacePath = RelativeWorkspacePathResolver.asAbsoluteWorkspacePath(tsdkPathSetting, this.configuration?.workspaceFolder);
 		if (workspacePath !== undefined) {
 			const serverPath = path.join(workspacePath, 'tsserver.js');
 			return [

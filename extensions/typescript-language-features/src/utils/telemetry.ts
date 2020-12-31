@@ -3,15 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from 'vscode';
 import VsCodeTelemetryReporter from 'vscode-extension-telemetry';
-import { memoize } from './memoize';
 
-interface PackageInfo {
-	readonly name: string;
-	readonly version: string;
-	readonly aiKey: string;
-}
+// interface PackageInfo {
+// 	readonly name: string;
+// 	readonly version: string;
+// 	readonly aiKey: string;
+// }
 
 export interface TelemetryProperties {
 	readonly [prop: string]: string | number | undefined;
@@ -28,22 +26,24 @@ export class VSCodeTelemetryReporter implements TelemetryReporter {
 
 	constructor(
 		private readonly clientVersionDelegate: () => string
-	) { }
+	) {
+		this.clientVersionDelegate;
+	}
 
-	public logTelemetry(eventName: string, properties: { [prop: string]: string } = {}) {
-		const reporter = this.reporter;
-		if (!reporter) {
-			return;
-		}
+	public logTelemetry(_eventName: string, _properties: { [prop: string]: string } = {}) {
+		// const reporter = this.reporter;
+		// if (!reporter) {
+		// 	return;
+		// }
 
-		/* __GDPR__FRAGMENT__
-			"TypeScriptCommonProperties" : {
-				"version" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
-			}
-		*/
-		properties['version'] = this.clientVersionDelegate();
+		// /* __GDPR__FRAGMENT__
+		// 	"TypeScriptCommonProperties" : {
+		// 		"version" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
+		// 	}
+		// */
+		// properties['version'] = this.clientVersionDelegate();
 
-		reporter.sendTelemetryEvent(eventName, properties);
+		// reporter.sendTelemetryEvent(eventName, properties);
 	}
 
 	public dispose() {
@@ -53,28 +53,28 @@ export class VSCodeTelemetryReporter implements TelemetryReporter {
 		}
 	}
 
-	@memoize
-	private get reporter(): VsCodeTelemetryReporter | null {
-		if (this.packageInfo && this.packageInfo.aiKey) {
-			this._reporter = new VsCodeTelemetryReporter(
-				this.packageInfo.name,
-				this.packageInfo.version,
-				this.packageInfo.aiKey);
-			return this._reporter;
-		}
-		return null;
-	}
+	// @memoize
+	// private get reporter(): VsCodeTelemetryReporter | null {
+	// 	if (this.packageInfo && this.packageInfo.aiKey) {
+	// 		this._reporter = new VsCodeTelemetryReporter(
+	// 			this.packageInfo.name,
+	// 			this.packageInfo.version,
+	// 			this.packageInfo.aiKey);
+	// 		return this._reporter;
+	// 	}
+	// 	return null;
+	// }
 
-	@memoize
-	private get packageInfo(): PackageInfo | null {
-		const { packageJSON } = vscode.extensions.getExtension('vscode.typescript-language-features')!;
-		if (packageJSON) {
-			return {
-				name: packageJSON.name,
-				version: packageJSON.version,
-				aiKey: packageJSON.aiKey
-			};
-		}
-		return null;
-	}
+	// @memoize
+	// private get packageInfo(): PackageInfo | null {
+	// 	const { packageJSON } = vscode.extensions.getExtension('vscode.typescript-language-features')!;
+	// 	if (packageJSON) {
+	// 		return {
+	// 			name: packageJSON.name,
+	// 			version: packageJSON.version,
+	// 			aiKey: packageJSON.aiKey
+	// 		};
+	// 	}
+	// 	return null;
+	// }
 }

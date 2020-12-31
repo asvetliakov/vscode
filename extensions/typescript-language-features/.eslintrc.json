@@ -1,5 +1,12 @@
 {
 	"rules": {
-		"prefer-const": "error"
+		"prefer-const": "error",
+		"code-no-unused-expressions": "off",
+		"code-translation-remind": "off",
+		"code-no-nls-in-standalone-editor": "off",
+		"code-no-standalone-editor": "off",
+		"code-no-unexternalized-strings": "off",
+		"code-layering": "off",
+		"code-import-patterns": "off"
 	}
 }

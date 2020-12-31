@@ -103,13 +103,15 @@ export class TypeScriptServiceConfiguration {
 	public readonly watchOptions: protocol.WatchOptions | undefined;
 	public readonly includePackageJsonAutoImports: 'auto' | 'on' | 'off' | undefined;
 	public readonly enableTsServerTracing: boolean;
+	public readonly workspaceFolder?: vscode.WorkspaceFolder;
 
-	public static loadFromWorkspace(): TypeScriptServiceConfiguration {
-		return new TypeScriptServiceConfiguration();
+	public static loadFromWorkspace(workspaceFolder?: vscode.WorkspaceFolder): TypeScriptServiceConfiguration {
+		return new TypeScriptServiceConfiguration(workspaceFolder);
 	}
 
-	private constructor() {
-		const configuration = vscode.workspace.getConfiguration();
+	private constructor(workspaceFolder?: vscode.WorkspaceFolder) {
+		this.workspaceFolder = workspaceFolder;
+		const configuration = vscode.workspace.getConfiguration(undefined, workspaceFolder);
 
 		this.locale = TypeScriptServiceConfiguration.extractLocale(configuration);
 		this.globalTsdk = TypeScriptServiceConfiguration.extractGlobalTsdk(configuration);
@@ -152,8 +154,8 @@ export class TypeScriptServiceConfiguration {
 
 	private static extractLocalTsdk(configuration: vscode.WorkspaceConfiguration): string | null {
 		const inspect = configuration.inspect('typescript.tsdk');
-		if (inspect && typeof inspect.workspaceValue === 'string') {
-			return this.fixPathPrefixes(inspect.workspaceValue);
+		if (inspect && (typeof inspect.workspaceFolderValue === 'string' || typeof inspect.workspaceValue === 'string')) {
+			return this.fixPathPrefixes(inspect.workspaceFolderValue as string || inspect.workspaceValue as string);
 		}
 		return null;
 	}

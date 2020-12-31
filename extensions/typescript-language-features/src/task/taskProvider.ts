@@ -7,13 +7,13 @@ import * as jsonc from 'jsonc-parser';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import * as nls from 'vscode-nls';
+import { HostFactory } from "../lazyClientHost";
 import { wait } from '../test/testUtils';
-import { ITypeScriptServiceClient, ServerResponse } from '../typescriptService';
+import { ServerResponse } from '../typescriptService';
 import { coalesce, flatten } from '../utils/arrays';
 import { Disposable } from '../utils/dispose';
 import { exists } from '../utils/fs';
 import { isTsConfigFileName } from '../utils/languageDescription';
-import { Lazy } from '../utils/lazy';
 import { isImplicitProjectConfigFile } from '../utils/tsconfig';
 import { TSConfig, TsConfigProvider } from './tsconfigProvider';
 
@@ -44,7 +44,7 @@ class TscTaskProvider extends Disposable implements vscode.TaskProvider {
 	private readonly tsconfigProvider: TsConfigProvider;
 
 	public constructor(
-		private readonly client: Lazy<ITypeScriptServiceClient>
+		private readonly hostFactory: HostFactory,
 	) {
 		super();
 		this.tsconfigProvider = new TsConfigProvider();
@@ -127,8 +127,14 @@ class TscTaskProvider extends Disposable implements vscode.TaskProvider {
 			return [];
 		}
 
+		const fileUri = this.getActiveTypescriptDocumentUri();
+		if (!fileUri) {
+			return [];
+		}
+		const host = this.hostFactory.getHostForUri(fileUri);
+
 		const response = await Promise.race([
-			this.client.value.execute(
+			host.serviceClient.execute(
 				'projectInfo',
 				{ file, needFileNameList: false },
 				token),
@@ -200,7 +206,19 @@ class TscTaskProvider extends Disposable implements vscode.TaskProvider {
 		if (editor) {
 			const document = editor.document;
 			if (document && (document.languageId === 'typescript' || document.languageId === 'typescriptreact')) {
-				return this.client.value.toPath(document.uri);
+				const host = this.hostFactory.getHostForUri(document.uri);
+				return host.serviceClient.toPath(document.uri);
+			}
+		}
+		return undefined;
+	}
+
+	private getActiveTypescriptDocumentUri(): vscode.Uri | undefined {
+		const editor = vscode.window.activeTextEditor;
+		if (editor) {
+			const document = editor.document;
+			if (document && (document.languageId === 'typescript' || document.languageId === 'typescriptreact')) {
+				return document.uri;
 			}
 		}
 		return undefined;
@@ -297,7 +315,7 @@ class TscTaskProvider extends Disposable implements vscode.TaskProvider {
 }
 
 export function register(
-	lazyClient: Lazy<ITypeScriptServiceClient>,
+	hostFactory: HostFactory,
 ) {
-	return vscode.tasks.registerTaskProvider('typescript', new TscTaskProvider(lazyClient));
+	return vscode.tasks.registerTaskProvider('typescript', new TscTaskProvider(hostFactory));
 }

@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from 'vscode';
-import TypeScriptServiceClientHost from '../typeScriptServiceClientHost';
-import { Lazy } from '../utils/lazy';
+import { HostFactory } from "../lazyClientHost";
+import { getCurrentDocumentUri } from "../utils/getCurrentDocumentUri";
 import { openProjectConfigForFile, ProjectType } from '../utils/tsconfig';
 import { Command } from './commandManager';
 
@@ -13,13 +13,18 @@ export class TypeScriptGoToProjectConfigCommand implements Command {
 	public readonly id = 'typescript.goToProjectConfig';
 
 	public constructor(
-		private readonly lazyClientHost: Lazy<TypeScriptServiceClientHost>,
+		private readonly hostFactory: HostFactory
 	) { }
 
 	public execute() {
 		const editor = vscode.window.activeTextEditor;
 		if (editor) {
-			openProjectConfigForFile(ProjectType.TypeScript, this.lazyClientHost.value.serviceClient, editor.document.uri);
+			const uri = getCurrentDocumentUri();
+			if (!uri) {
+				return;
+			}
+			const host = this.hostFactory.getHostForUri(uri);
+			openProjectConfigForFile(ProjectType.TypeScript, host.serviceClient, editor.document.uri);
 		}
 	}
 }
@@ -28,13 +33,18 @@ export class JavaScriptGoToProjectConfigCommand implements Command {
 	public readonly id = 'javascript.goToProjectConfig';
 
 	public constructor(
-		private readonly lazyClientHost: Lazy<TypeScriptServiceClientHost>,
+		private readonly hostFactory: HostFactory,
 	) { }
 
 	public execute() {
 		const editor = vscode.window.activeTextEditor;
 		if (editor) {
-			openProjectConfigForFile(ProjectType.JavaScript, this.lazyClientHost.value.serviceClient, editor.document.uri);
+			const uri = getCurrentDocumentUri();
+			if (!uri) {
+				return;
+			}
+			const host = this.hostFactory.getHostForUri(uri);
+			openProjectConfigForFile(ProjectType.JavaScript, host.serviceClient, editor.document.uri);
 		}
 	}
 }

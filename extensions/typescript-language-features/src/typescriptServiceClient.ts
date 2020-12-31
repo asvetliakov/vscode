@@ -136,7 +136,8 @@ export default class TypeScriptServiceClient extends Disposable implements IType
 			versionProvider: ITypeScriptVersionProvider,
 			processFactory: TsServerProcessFactory,
 		},
-		allModeIds: readonly string[]
+		allModeIds: readonly string[],
+		workspaceFolder?: vscode.WorkspaceFolder,
 	) {
 		super();
 
@@ -161,7 +162,7 @@ export default class TypeScriptServiceClient extends Disposable implements IType
 
 		this.numberRestarts = 0;
 
-		this._configuration = TypeScriptServiceConfiguration.loadFromWorkspace();
+		this._configuration = TypeScriptServiceConfiguration.loadFromWorkspace(workspaceFolder);
 		this.versionProvider.updateConfiguration(this._configuration);
 
 		this.pluginPathsProvider = new TypeScriptPluginPathsProvider(this._configuration);
