@@ -12,6 +12,7 @@ import { ITypeScriptVersionProvider } from "./tsServer/versionProvider";
 import TypeScriptServiceClientHost from "./typeScriptServiceClientHost";
 import { flatten } from "./utils/arrays";
 import * as fileSchemes from "./utils/fileSchemes";
+import { getWorkspaceFolderForUri } from "./utils/getWorkspaceFolderForUri";
 import { standardLanguageDescriptions } from "./utils/languageDescription";
 import ManagedFileContextManager from "./utils/managedFileContext";
 import { PluginManager } from "./utils/plugins";
@@ -20,7 +21,7 @@ const tsHosts: Map<string, TypeScriptServiceClientHost> = new Map();
 
 export interface HostFactory {
 	getHostForWorkspaceFolder(
-		workspaceFolder: vscode.WorkspaceFolder
+		workspaceFolder: vscode.WorkspaceFolder | "default"
 	): TypeScriptServiceClientHost;
 	getHostForUri(uri: vscode.Uri): TypeScriptServiceClientHost;
 	reloadProjects(): void;
@@ -42,7 +43,7 @@ export function createHostFactory(
 	const getHostForWorkspaceFolder: HostFactory["getHostForWorkspaceFolder"] = (
 		workspaceFolder
 	) => {
-		const uriStr = workspaceFolder.uri.toString();
+		const uriStr = workspaceFolder === "default" ? workspaceFolder : workspaceFolder.uri.toString();
 		if (tsHosts.has(uriStr)) {
 			return tsHosts.get(uriStr)!;
 		}
@@ -52,7 +53,7 @@ export function createHostFactory(
 			onCaseInsenitiveFileSystem,
 			services,
 			onCompletionAccepted,
-			workspaceFolder
+			workspaceFolder === "default" ? undefined : workspaceFolder
 		);
 
 		context.subscriptions.push(clientHost);
@@ -67,15 +68,8 @@ export function createHostFactory(
 	return {
 		getHostForWorkspaceFolder,
 		getHostForUri: (uri) => {
-			let workspaceFolder = vscode.workspace.getWorkspaceFolder(uri);
-			if (!workspaceFolder) {
-				workspaceFolder = {
-					index: 0,
-					name: "DEFAULT",
-					uri: vscode.Uri.parse("unititled://"),
-				};
-			}
-			return getHostForWorkspaceFolder(workspaceFolder);
+			const workspaceFolder = getWorkspaceFolderForUri(uri);
+			return getHostForWorkspaceFolder(workspaceFolder || "default");
 		},
 		reloadProjects: () => {
 			[...tsHosts.values()].forEach((host) => host.reloadProjects());

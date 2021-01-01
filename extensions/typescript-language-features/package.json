@@ -2,7 +2,7 @@
   "name": "typescript-language-features-multi-host",
   "description": "Spawn separate typescript servers for multi root workspaces",
   "displayName": "Typescript Language Server - Multi Host mode",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "vscode",
   "publisher": "asvetliakov",
   "license": "MIT",
@@ -30,6 +30,7 @@
     "typescript-web": "npm:typescript@^4.2.0-dev.20201209"
   },
   "scripts": {
+    "webpack-dev": "npx webpack-cli --config extension.webpack.config.js --mode none --watch",
     "vscode:prepublish": "npx webpack-cli --config extension.webpack.config.js --mode none",
     "compile-web": "npx webpack-cli --config extension-browser.webpack.config --mode none",
     "watch-web": "npx webpack-cli --config extension-browser.webpack.config --mode none --watch --info-verbosity verbose"

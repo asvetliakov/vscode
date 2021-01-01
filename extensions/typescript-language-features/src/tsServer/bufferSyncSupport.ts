@@ -11,6 +11,7 @@ import { coalesce } from '../utils/arrays';
 import { Delayer } from '../utils/async';
 import { nulToken } from '../utils/cancellation';
 import { Disposable } from '../utils/dispose';
+import { getWorkspaceFolderForUri } from "../utils/getWorkspaceFolderForUri";
 import * as languageModeIds from '../utils/languageModeIds';
 import { ResourceMap } from '../utils/resourceMap';
 import * as typeConverters from '../utils/typeConverters';
@@ -394,7 +395,7 @@ export default class BufferSynreturncSupport extends Disposable {
 		vscode.window.onDidChangeVisibleTextEditors(e => {
 			for (const { document } of e) {
 				if (this.workspaceFolder) {
-					const docWorkspace = vscode.workspace.getWorkspaceFolder(document.uri);
+					const docWorkspace = getWorkspaceFolderForUri(document.uri);
 					if (!docWorkspace?.uri || docWorkspace.uri.toString() !== this.workspaceFolder.uri.toString()) {
 						continue;
 					}
@@ -461,7 +462,7 @@ export default class BufferSynreturncSupport extends Disposable {
 			return false;
 		}
 		if (this.workspaceFolder) {
-			const docWorkspace = vscode.workspace.getWorkspaceFolder(document.uri);
+			const docWorkspace = getWorkspaceFolderForUri(document.uri);
 			if (!docWorkspace?.uri || docWorkspace.uri.toString() !== this.workspaceFolder.uri.toString()) {
 				return false;
 			}
@@ -518,7 +519,7 @@ export default class BufferSynreturncSupport extends Disposable {
 
 	private onDidCloseTextDocument(document: vscode.TextDocument): void {
 		if (this.workspaceFolder) {
-			const docWorkspace = vscode.workspace.getWorkspaceFolder(document.uri);
+			const docWorkspace = getWorkspaceFolderForUri(document.uri);
 			if (!docWorkspace?.uri || docWorkspace.uri.toString() !== this.workspaceFolder.uri.toString()) {
 				return;
 			}
@@ -532,7 +533,7 @@ export default class BufferSynreturncSupport extends Disposable {
 			return;
 		}
 		if (this.workspaceFolder) {
-			const docWorkspace = vscode.workspace.getWorkspaceFolder(e.document.uri);
+			const docWorkspace = getWorkspaceFolderForUri(e.document.uri);
 			if (!docWorkspace?.uri || docWorkspace.uri.toString() !== this.workspaceFolder.uri.toString()) {
 				return;
 			}
