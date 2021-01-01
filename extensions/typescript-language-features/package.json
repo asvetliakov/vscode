@@ -7,7 +7,7 @@
   "publisher": "asvetliakov",
   "license": "MIT",
   "repository": "https://github.com/asvetliakov/vscode",
-  "enableProposedApi": true,
+  "enableProposedApi": false,
   "engines": {
     "vscode": "^1.30.0"
   },
