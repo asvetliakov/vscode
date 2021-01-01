@@ -28,7 +28,6 @@ import { DiagnosticLanguage, LanguageDescription } from './utils/languageDescrip
 import { PluginManager } from './utils/plugins';
 import * as typeConverters from './utils/typeConverters';
 import TypingsStatus, { AtaProgressReporter } from './utils/typingsStatus';
-import * as ProjectStatus from './utils/largeProjectStatus';
 
 // Style check diagnostics that can be reported as warnings
 const styleCheckDiagnostics = new Set([
@@ -54,6 +53,7 @@ export default class TypeScriptServiceClientHost extends Disposable {
 	private reportStyleCheckAsWarnings: boolean = true;
 
 	private readonly commandManager: CommandManager;
+	private readonly workspaceFolder?: vscode.WorkspaceFolder;
 
 	constructor(
 		descriptions: LanguageDescription[],
@@ -71,6 +71,7 @@ export default class TypeScriptServiceClientHost extends Disposable {
 		workspaceFolder?: vscode.WorkspaceFolder
 	) {
 		super();
+		this.workspaceFolder = workspaceFolder;
 
 		this.commandManager = services.commandManager;
 
@@ -92,12 +93,11 @@ export default class TypeScriptServiceClientHost extends Disposable {
 		this._register(new VersionStatus(this.client, services.commandManager));
 		this._register(new AtaProgressReporter(this.client));
 		this.typingsStatus = this._register(new TypingsStatus(this.client));
-		this._register(ProjectStatus.create(this.client));
 
 		this.fileConfigurationManager = this._register(new FileConfigurationManager(this.client, onCaseInsenitiveFileSystem));
 
 		for (const description of descriptions) {
-			const manager = new LanguageProvider(this.client, description, this.commandManager, this.client.telemetryReporter, this.typingsStatus, this.fileConfigurationManager, onCompletionAccepted);
+			const manager = new LanguageProvider(this.client, description, this.commandManager, this.client.telemetryReporter, this.typingsStatus, this.fileConfigurationManager, onCompletionAccepted, workspaceFolder);
 			this.languages.push(manager);
 			this._register(manager);
 			this.languagePerId.set(description.id, manager);
@@ -150,7 +150,7 @@ export default class TypeScriptServiceClientHost extends Disposable {
 	}
 
 	private registerExtensionLanguageProvider(description: LanguageDescription, onCompletionAccepted: (item: vscode.CompletionItem) => void) {
-		const manager = new LanguageProvider(this.client, description, this.commandManager, this.client.telemetryReporter, this.typingsStatus, this.fileConfigurationManager, onCompletionAccepted);
+		const manager = new LanguageProvider(this.client, description, this.commandManager, this.client.telemetryReporter, this.typingsStatus, this.fileConfigurationManager, onCompletionAccepted, this.workspaceFolder);
 		this.languages.push(manager);
 		this._register(manager);
 		this.languagePerId.set(description.id, manager);

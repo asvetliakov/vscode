@@ -31,6 +31,7 @@ export default class LanguageProvider extends Disposable {
 		private readonly typingsStatus: TypingsStatus,
 		private readonly fileConfigurationManager: FileConfigurationManager,
 		private readonly onCompletionAccepted: (item: vscode.CompletionItem) => void,
+		private readonly workspaceFolder?: vscode.WorkspaceFolder,
 	) {
 		super();
 		vscode.workspace.onDidChangeConfiguration(this.configurationChanged, this, this._disposables);
@@ -43,9 +44,9 @@ export default class LanguageProvider extends Disposable {
 		const semantic: vscode.DocumentFilter[] = [];
 		const syntax: vscode.DocumentFilter[] = [];
 		for (const language of this.description.modeIds) {
-			syntax.push({ language });
+			syntax.push({ language, pattern: this.workspaceFolder ? new vscode.RelativePattern(this.workspaceFolder, "**") : undefined });
 			for (const scheme of fileSchemes.semanticSupportedSchemes) {
-				semantic.push({ language, scheme });
+				semantic.push({ language, scheme, pattern: this.workspaceFolder ? new vscode.RelativePattern(this.workspaceFolder, "**") : undefined });
 			}
 		}
 
