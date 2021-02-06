@@ -29,7 +29,7 @@ export interface HostFactory {
 
 export function createHostFactory(
 	context: vscode.ExtensionContext,
-	onCaseInsenitiveFileSystem: boolean,
+	onCaseInsensitiveFileSystem: boolean,
 	services: {
 		pluginManager: PluginManager;
 		commandManager: CommandManager;
@@ -50,7 +50,7 @@ export function createHostFactory(
 		const clientHost = new TypeScriptServiceClientHost(
 			standardLanguageDescriptions,
 			context,
-			onCaseInsenitiveFileSystem,
+			onCaseInsensitiveFileSystem,
 			services,
 			onCompletionAccepted,
 			workspaceFolder === "default" ? undefined : workspaceFolder

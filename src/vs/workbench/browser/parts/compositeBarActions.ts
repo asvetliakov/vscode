@@ -4,12 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as nls from 'vs/nls';
-import { Action, Separator } from 'vs/base/common/actions';
+import { Action, IAction, Separator } from 'vs/base/common/actions';
 import * as dom from 'vs/base/browser/dom';
 import { ICommandService } from 'vs/platform/commands/common/commands';
 import { dispose, toDisposable, MutableDisposable } from 'vs/base/common/lifecycle';
 import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
-import { IThemeService, IColorTheme } from 'vs/platform/theme/common/themeService';
+import { IThemeService, IColorTheme, ThemeIcon } from 'vs/platform/theme/common/themeService';
 import { TextBadge, NumberBadge, IBadge, IconBadge, ProgressBadge } from 'vs/workbench/services/activity/common/activity';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { contrastBorder } from 'vs/platform/theme/common/colorRegistry';
@@ -19,8 +19,8 @@ import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { Emitter, Event } from 'vs/base/common/event';
 import { CompositeDragAndDropObserver, ICompositeDragAndDrop, Before2D, toggleDropEffect } from 'vs/workbench/browser/dnd';
 import { Color } from 'vs/base/common/color';
-import { Codicon } from 'vs/base/common/codicons';
 import { IBaseActionViewItemOptions, BaseActionViewItem } from 'vs/base/browser/ui/actionbar/actionViewItems';
+import { Codicon } from 'vs/base/common/codicons';
 
 export interface ICompositeActivity {
 	badge: IBadge;
@@ -288,8 +288,10 @@ export class ActivityActionViewItem extends BaseActionViewItem {
 				dom.show(this.badge);
 			}
 
-			// Text
+			// Icon
 			else if (badge instanceof IconBadge) {
+				const clazzList = ThemeIcon.asClassNameArray(badge.icon);
+				this.badgeContent.classList.add(...clazzList);
 				dom.show(this.badge);
 			}
 
@@ -374,14 +376,14 @@ export class CompositeOverflowActivityAction extends ActivityAction {
 }
 
 export class CompositeOverflowActivityActionViewItem extends ActivityActionViewItem {
-	private actions: Action[] = [];
+	private actions: IAction[] = [];
 
 	constructor(
 		action: ActivityAction,
 		private getOverflowingComposites: () => { id: string, name?: string }[],
 		private getActiveCompositeId: () => string | undefined,
 		private getBadge: (compositeId: string) => IBadge,
-		private getCompositeOpenAction: (compositeId: string) => Action,
+		private getCompositeOpenAction: (compositeId: string) => IAction,
 		colors: (theme: IColorTheme) => ICompositeBarColors,
 		@IContextMenuService private readonly contextMenuService: IContextMenuService,
 		@IThemeService themeService: IThemeService
@@ -404,7 +406,7 @@ export class CompositeOverflowActivityActionViewItem extends ActivityActionViewI
 		});
 	}
 
-	private getActions(): Action[] {
+	private getActions(): IAction[] {
 		return this.getOverflowingComposites().map(composite => {
 			const action = this.getCompositeOpenAction(composite.id);
 			action.checked = this.getActiveCompositeId() === action.id;
@@ -457,9 +459,9 @@ export class CompositeActionViewItem extends ActivityActionViewItem {
 
 	constructor(
 		private compositeActivityAction: ActivityAction,
-		private toggleCompositePinnedAction: Action,
-		private compositeContextMenuActionsProvider: (compositeId: string) => ReadonlyArray<Action>,
-		private contextMenuActionsProvider: () => ReadonlyArray<Action>,
+		private toggleCompositePinnedAction: IAction,
+		private compositeContextMenuActionsProvider: (compositeId: string) => IAction[],
+		private contextMenuActionsProvider: () => IAction[],
 		colors: (theme: IColorTheme) => ICompositeBarColors,
 		icon: boolean,
 		private dndHandler: ICompositeDragAndDrop,
@@ -500,9 +502,14 @@ export class CompositeActionViewItem extends ActivityActionViewItem {
 		return this.compositeActivity;
 	}
 
-	private getActivtyName(): string {
+	private getActivtyName(skipKeybinding = false): string {
+		let name = this.compositeActivityAction.activity.name;
+		if (skipKeybinding) {
+			return name;
+		}
+
 		const keybinding = this.compositeActivityAction.activity.keybindingId ? this.keybindingService.lookupKeybinding(this.compositeActivityAction.activity.keybindingId) : null;
-		return keybinding ? nls.localize('titleKeybinding', "{0} ({1})", this.compositeActivityAction.activity.name, keybinding.getLabel()) : this.compositeActivityAction.activity.name;
+		return keybinding ? nls.localize('titleKeybinding', "{0} ({1})", name, keybinding.getLabel()) : name;
 	}
 
 	render(container: HTMLElement): void {
@@ -601,7 +608,7 @@ export class CompositeActionViewItem extends ActivityActionViewItem {
 	}
 
 	private showContextMenu(container: HTMLElement): void {
-		const actions: Action[] = [this.toggleCompositePinnedAction];
+		const actions: IAction[] = [this.toggleCompositePinnedAction];
 
 		const compositeContextMenuActions = this.compositeContextMenuActionsProvider(this.activity.id);
 		if (compositeContextMenuActions.length) {
@@ -615,10 +622,10 @@ export class CompositeActionViewItem extends ActivityActionViewItem {
 
 		const isPinned = this.compositeBar.isPinned(this.activity.id);
 		if (isPinned) {
-			this.toggleCompositePinnedAction.label = nls.localize('hide', "Hide");
+			this.toggleCompositePinnedAction.label = nls.localize('hide', "Hide '{0}'", this.getActivtyName(true));
 			this.toggleCompositePinnedAction.checked = false;
 		} else {
-			this.toggleCompositePinnedAction.label = nls.localize('keep', "Keep");
+			this.toggleCompositePinnedAction.label = nls.localize('keep', "Keep '{0}'", this.getActivtyName(true));
 		}
 
 		const otherActions = this.contextMenuActionsProvider();
